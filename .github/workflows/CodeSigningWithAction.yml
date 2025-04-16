@@ -8,7 +8,6 @@ permissions: read-all
 jobs:
   code-signing:
     runs-on: windows-latest
-    secrets: inherit
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,6 +18,10 @@ jobs:
         uses: Open-Systems-Pharmacology/Test_CS/.github/actions/codesigner-SSL@main
         with:
           file_path: ./input_files/PKSim.exe
+          ES_USERNAME: ${{ secrets.ES_USERNAME }}
+          ES_PASSWORD: ${{ secrets.ES_PASSWORD }}
+          ES_CREDENTIAL_ID: ${{ secrets.ES_CREDENTIAL_ID }}
+          ES_TOTP_SECRET: ${{ secrets.ES_TOTP_SECRET }}
           
       - name: Push signed exe as artifact
         uses: actions/upload-artifact@v4
