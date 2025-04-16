@@ -3,42 +3,42 @@ description: "GitHub Action for CodeSigner by SSL.com"
 
 inputs:
   file_path:
-    description: "Path of code object to be signed."
-    required: false
+    description: "Path of the code object to be signed. Supported file types: acm, ax, bin, cab, cpl, dll, drv, efi, exe, mui, ocx, scr, sys, tsp, msi, ps1, ps1xml, js, vbs, wsf, jar"
+    required: true
   output_dir_path:
-    description: "Directory where signed code object(s) will be written (if override is set to false)"
+    description: "Directory where the signed code object will be written (leave empty if override is set to true)."
     required: false
   malware_block:
-    description: "Scans your file for any possible malware in order to avoid code compromise and prevents signing of code if malware is detected."
+    description: "Scans your file for possible malware to prevent code compromise and prevents signing code if malware is detected."
     required: false
     default: "false"
   override:
-    description: "Overrides the input file after signing, if this argument is set to true and no output_dir_path argument was passed"
+    description: "Override the input file after signing if this argument is set to true and no output_dir_path argument was passed."
     required: false
     default: "true"
   clean_logs:
-    description: "Clean log files after code signing operations"
+    description: "Clean log files after code signing operations."
     required: false
     default: "false"
   jvm_max_memory:
-    description: "Maximumx JVM heap size"
+    description: "Maximumx JVM heap size."
     required: false
     default: "1024M"
   signing_method:
-    description: "Code signing method. Default is v1. Supported values: v1, v2"
+    description: "Code signing method. Default is v1. Supported values: v1, v2."
     required: false
     default: "v1"
   ES_USERNAME:
-    description: "SSL.com account username"
+    description: "SSL.com account username."
     required: true
   ES_PASSWORD:
-    description: "SSL.com account password"
+    description: "SSL.com account password."
     required: true
   ES_CREDENTIAL_ID:
-    description: "Credential ID for signing certificate"
+    description: "Credential ID for signing certificate."
     required: true
   ES_TOTP_SECRET:
-    description: "OAuth TOTP Secret"
+    description: "OAuth TOTP Secret."
     required: true
 
 runs:
@@ -56,7 +56,7 @@ runs:
           # - batch_sign_hash: Sign hash(es) pre-computed with hash command.
           command: sign
 
-          # SSL.com account username..
+          # SSL.com account username.
           username: ${{inputs.ES_USERNAME}}
 
           # SSL.com account password.
@@ -68,25 +68,24 @@ runs:
           # OAuth TOTP Secret (https://www.ssl.com/how-to/automate-esigner-ev-code-signing)
           totp_secret: ${{inputs.ES_TOTP_SECRET}}
 
-          # Path of code object to be signed.
-          # Supported File Types: acm, ax, bin, cab, cpl, dll, drv, efi, exe, mui, ocx, scr, sys, tsp, msi, ps1, ps1xml, js, vbs, wsf, jar
+          # Path of the code object to be signed.
+          # Supported file types: acm, ax, bin, cab, cpl, dll, drv, efi, exe, mui, ocx, scr, sys, tsp, msi, ps1, ps1xml, js, vbs, wsf, jar
           file_path: ${{ inputs.file_path }}
 
-          # Directory where signed code object(s) will be written.
+          # Directory where the signed code object will be written.
           output_path: ${{ inputs.output_dir_path }}
 
-          # Scans your file for any possible malware in order to avoid code compromise and prevents signing of code if malware is detected.
-          # On batch_sign command: If you are getting 'Error: hash needs to be scanned first before submitting for signing: <hash_value>', you can set this value to true
+          # Scans your file for possible malware to prevent code compromise and prevents signing code if malware is detected.
           malware_block: ${{ inputs.malware_block }}
     
-          # Overrides the input file after signing, if this parameter is set and no -output_dir_path parameter
+          # Override the input file after signing if this argument is set to true and no output_path argument was passed.
           override: ${{ inputs.override }}
     
-          # Clean log files after code signing operations
+          # Clean log files after code signing operations.
           clean_logs: ${{ inputs.clean_logs }}
 
-          # Maximumx JVM heap size
+          # Maximumx JVM heap size.
           jvm_max_memory: ${{ inputs.jvm_max_memory }}
 
-          # Code signing method. Default is v1. Supported values: v1, v2
+          # Code signing method. Default is v1. Supported values: v1, v2.
           signing_method: ${{ inputs.signing_method }}
