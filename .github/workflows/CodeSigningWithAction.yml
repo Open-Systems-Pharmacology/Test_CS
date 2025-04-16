@@ -1,4 +1,4 @@
-name: Code signing
+name: Code signing via action
 
 on:
   push:
@@ -18,6 +18,7 @@ jobs:
         uses: Open-Systems-Pharmacology/Test_CS/.github/actions/codesigner-SSL@main
         with:
           file_path: ./input_files/PKSim.exe
+        secrets: inherit
           
       - name: Push signed exe as artifact
         uses: actions/upload-artifact@v4
