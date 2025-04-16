@@ -16,9 +16,9 @@ jobs:
 
       - name: Sign Artifact with CodeSignTool
         uses: Open-Systems-Pharmacology/Test_CS/.github/actions/codesigner-SSL@main
+        secrets: inherit
         with:
           file_path: ./input_files/PKSim.exe
-        secrets: inherit
           
       - name: Push signed exe as artifact
         uses: actions/upload-artifact@v4
