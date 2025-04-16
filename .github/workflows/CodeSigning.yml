@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 0
 
       - name: Sign Artifact with CodeSignTool
-        uses: sslcom/esigner-codesign@develop
+        uses: sslcom/esigner-codesign@v1
         with:
           # CodeSignTool Commands:
           # - get_credential_ids: Output the list of eSigner credential IDs associated with a particular user.
