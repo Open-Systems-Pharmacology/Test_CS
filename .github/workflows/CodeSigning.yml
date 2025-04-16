@@ -60,7 +60,7 @@ jobs:
           #environment_name: TEST
     
           # Clean log files after code signing operations
-          clean_logs: false
+          clean_logs: true
 
           # Maximumx JVM heap size
           jvm_max_memory: 1024M
