@@ -8,6 +8,7 @@ permissions: read-all
 jobs:
   code-signing:
     runs-on: windows-latest
+    secrets: inherit
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -16,7 +17,6 @@ jobs:
 
       - name: Sign Artifact with CodeSignTool
         uses: Open-Systems-Pharmacology/Test_CS/.github/actions/codesigner-SSL@main
-        secrets: inherit
         with:
           file_path: ./input_files/PKSim.exe
           
