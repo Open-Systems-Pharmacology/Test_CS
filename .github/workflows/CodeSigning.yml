@@ -44,7 +44,7 @@ jobs:
           # file_path: PKSim.exe
 
           # Input directory for code objects to be signed, have hashes computed, or pick unsigned files and corresponding hashes for signing.
-          dir_path: ${GITHUB_WORKSPACE}
+          dir_path: ${GITHUB_WORKSPACE}/input_files
 
           # Directory where signed code object(s) will be written.
           # output_path: ${GITHUB_WORKSPACE}/artifacts
@@ -60,7 +60,7 @@ jobs:
           #environment_name: TEST
     
           # Clean log files after code signing operations
-          clean_logs: true
+          clean_logs: false
 
           # Maximumx JVM heap size
           jvm_max_memory: 1024M
