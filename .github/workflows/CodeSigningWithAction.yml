@@ -8,23 +8,35 @@ permissions: read-all
 jobs:
   code-signing:
     runs-on: windows-latest
+    env:
+      ES_USERNAME: ${{ secrets.ES_USERNAME }}
+      ES_PASSWORD: ${{ secrets.ES_PASSWORD }}
+      ES_CREDENTIAL_ID: ${{ secrets.ES_CREDENTIAL_ID }}
+      ES_TOTP_SECRET: ${{ secrets.ES_TOTP_SECRET }}
+      
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Sign Artifact with CodeSignTool
+      - name: Sign PKSim.exe CodeSignTool
         uses: Open-Systems-Pharmacology/Test_CS/.github/actions/codesigner-SSL@main
         with:
           file_path: ./input_files/PKSim.exe
-          ES_USERNAME: ${{ secrets.ES_USERNAME }}
-          ES_PASSWORD: ${{ secrets.ES_PASSWORD }}
-          ES_CREDENTIAL_ID: ${{ secrets.ES_CREDENTIAL_ID }}
-          ES_TOTP_SECRET: ${{ secrets.ES_TOTP_SECRET }}
+          
+      - name: Sign PKSim.BatchTool.exe CodeSignTool
+        uses: Open-Systems-Pharmacology/Test_CS/.github/actions/codesigner-SSL@main
+        with:
+          file_path: ./input_files/PKSim.BatchTool.exe
+          
+      - name: Sign PKSim.CLI.exe CodeSignTool
+        uses: Open-Systems-Pharmacology/Test_CS/.github/actions/codesigner-SSL@main
+        with:
+          file_path: ./input_files/PKSim.CLI.exe
           
       - name: Push signed exe as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: signed_PKSim.exe
-          path: ./input_files/PKSim.exe
+          name: signed_executables.exe
+          path: ./input_files/*.exe
