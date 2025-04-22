@@ -21,17 +21,17 @@ jobs:
           fetch-depth: 0
 
       - name: Sign PKSim.exe CodeSignTool
-        uses: Open-Systems-Pharmacology/Test_CS/.github/actions/codesigner-SSL@main
+        uses: Open-Systems-Pharmacology/Workflows/.github/actions/codesigner-SSL@main
         with:
           file_path: ./input_files/PKSim.exe
           
       - name: Sign PKSim.BatchTool.exe CodeSignTool
-        uses: Open-Systems-Pharmacology/Test_CS/.github/actions/codesigner-SSL@main
+        uses: Open-Systems-Pharmacology/Workflows/.github/actions/codesigner-SSL@main
         with:
           file_path: ./input_files/PKSim.BatchTool.exe
           
       - name: Sign PKSim.CLI.exe CodeSignTool
-        uses: Open-Systems-Pharmacology/Test_CS/.github/actions/codesigner-SSL@main
+        uses: Open-Systems-Pharmacology/Workflows/.github/actions/codesigner-SSL@main
         with:
           file_path: ./input_files/PKSim.CLI.exe
           
