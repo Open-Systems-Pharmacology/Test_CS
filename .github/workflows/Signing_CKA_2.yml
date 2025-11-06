@@ -1,4 +1,3 @@
-# Sign Artifact (hardened)
 name: Signing CKA 2
 
 on: [push, workflow_dispatch]
@@ -17,9 +16,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v5
 
-      - name: Download setup
+      - name: download setup
         run: |
-          Invoke-WebRequest -OutFile "$Env:SIGNABLE_APP_FILE_PATH" "https://github.com/Open-Systems-Pharmacology/Suite/releases/download/v12.1/OSPSuite-Full.12.1.136.exe"
+          Invoke-WebRequest -OutFile OSPSuite-Full.12.1.136.exe "https://github.com/Open-Systems-Pharmacology/Suite/releases/download/v12.1/OSPSuite-Full.12.1.136.exe"
 
       - name: Download and Unzip eSignerCKA Setup
         run: |
@@ -30,12 +29,12 @@ jobs:
 
       - name: Setup eSignerCKA in Silent Mode
         run: |
-          New-Item -ItemType Directory -Force -Path $Env:INSTALL_DIR | Out-Null
-          Start-Process ".\eSigner_CKA_Installer.exe" -ArgumentList '/CURRENTUSER /VERYSILENT /SUPPRESSMSGBOXES /DIR="'+$Env:INSTALL_DIR+'"' -Wait
-          & "$Env:INSTALL_DIR/RegisterKSP.exe" | Out-Null
-          & "$Env:INSTALL_DIR/eSignerCSP.Config.exe" | Out-Null
+          New-Item -ItemType Directory -Force -Path ${{ env.INSTALL_DIR }}
+          Start-Process ".\eSigner_CKA_Installer.exe" -argumentlist '/CURRENTUSER /VERYSILENT /SUPPRESSMSGBOXES /DIR="${{ env.INSTALL_DIR }}"' -wait
+          ${{ env.INSTALL_DIR }}/RegisterKSP.exe | Out-Null
+          ${{ env.INSTALL_DIR }}/eSignerCSP.Config.exe | Out-Null
 
-      - name: Configure eSignerCKA account
+      - name: Config Account Information on eSignerCKA
         shell: pwsh
         env:
           ES_USERNAME: ${{ secrets.ES_USERNAME }}
@@ -43,25 +42,30 @@ jobs:
           ES_TOTP_SECRET: ${{ secrets.ES_TOTP_SECRET }}
         run: |
           $exe = Join-Path $Env:INSTALL_DIR 'eSignerCKATool.exe'
-          & $exe config `
-            -mode product `
-            -user $Env:ES_USERNAME `
-            -pass $Env:ES_PASSWORD `
-            -totp $Env:ES_TOTP_SECRET `
-            -key  $Env:MASTER_KEY_FILE `
-            -r
+          $args = @(
+            'config'
+            '-mode'; 'product'
+            '-user'; $Env:ES_USERNAME
+            '-pass'; $Env:ES_PASSWORD
+            '-totp'; $Env:ES_TOTP_SECRET
+            '-key'; $Env:MASTER_KEY_FILE
+            '-r'
+          )
+          & $exe @args
 
-      - name: Load certificate into CurrentUser store
+      - name: Load Certificate into Windows Store
         run: |
-          & "$Env:INSTALL_DIR/eSignerCKATool.exe" unload
-          & "$Env:INSTALL_DIR/eSignerCKATool.exe" load
+          ${{ env.INSTALL_DIR }}/eSignerCKATool.exe unload
+          ${{ env.INSTALL_DIR }}/eSignerCKATool.exe load
 
-      - name: Select code signing certificate
-        shell: pwsh
+      - name: Select Certificate From Windows Store
         run: |
-          $CodeSigningCert = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert | Where-Object { $_.Subject -match 'Life Sciences Foundation gUG' } | Select-Object -First 1
-          if (-not $CodeSigningCert) { throw "Code signing cert not found." }
-          "THUMBPRINT=$($CodeSigningCert.Thumbprint)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          $CodeSigningCert = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert | WHERE { $_.subject -Match "Life Sciences Foundation gUG" }
+          echo "THUMBPRINT=$($CodeSigningCert.Thumbprint)" >> $env:GITHUB_ENV
+    
+      - name: Debug Certificate List
+        run: |
+          Get-ChildItem Cert:\CurrentUser\My | Format-List Subject,Thumbprint,EnhancedKeyUsageList
 
       - name: Resolve stable SignTool path
         id: signtool
