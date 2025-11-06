@@ -34,16 +34,16 @@ jobs:
           Remove-Item eSigner_CKA_Setup.zip
           Move-Item -Destination "eSigner_CKA_Installer.exe" -Path "eSigner_CKA_*\*.exe"
 
-#      # 3) Download and Unzip Dynamics 365 Setup
-#      - name: Download and Unzip Dynamics 365 Setup
-#        run: |
-#          Invoke-WebRequest -OutFile Dynamics.365.BC.12841.US.DVD.zip "https://download.microsoft.com/download/3/e/7/3e71083e-6cd6-4598-a6bb-5c602b74aec3/Release/Dynamics.365.BC.12841.US.DVD.zip"
-#          Expand-Archive -Force Dynamics.365.BC.12841.US.DVD.zip
+      # 3) Download and Unzip Dynamics 365 Setup
+      - name: Download and Unzip Dynamics 365 Setup
+        run: |
+          Invoke-WebRequest -OutFile Dynamics.365.BC.12841.US.DVD.zip "https://download.microsoft.com/download/3/e/7/3e71083e-6cd6-4598-a6bb-5c602b74aec3/Release/Dynamics.365.BC.12841.US.DVD.zip"
+          Expand-Archive -Force Dynamics.365.BC.12841.US.DVD.zip
 
-#      # 4) Install Dynamics 365
-#      - name: Install Dynamics 365
-#        run: |
-#          Start-Process ".\Dynamics.365.BC.12841.US.DVD\setup.exe" -argumentlist "/config .\Dynamics.365.BC.12841.US.DVD\Install-NavComponentConfig.xml /quiet" -wait
+      # 4) Install Dynamics 365
+      - name: Install Dynamics 365
+        run: |
+          Start-Process ".\Dynamics.365.BC.12841.US.DVD\setup.exe" -argumentlist "/config .\Dynamics.365.BC.12841.US.DVD\Install-NavComponentConfig.xml /quiet" -wait
 
       # 5) Install eSignerCKA
       - name: Setup eSignerCKA in Silent Mode
@@ -109,7 +109,7 @@ jobs:
         run: |
           & 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/signtool.exe' sign /debug /fd sha256 /tr http://ts.ssl.com /td sha256 /sha1 ${{ env.THUMBPRINT }} ${{ env.SIGNABLE_APP_FILE_PATH }}
 
-      - name: Upload eSignerCKA Logs
+      - name: Upload signed setup
         uses: actions/upload-artifact@v5
         with:
           name: OSPSuite-Full.12.1.136
