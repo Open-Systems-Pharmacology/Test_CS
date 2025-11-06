@@ -58,7 +58,7 @@ jobs:
       # 6) Set SSLcom account information
       - name: Config Account Information on eSignerCKA
         run: |
-          ${{ env.INSTALL_DIR }}/eSignerCKATool.exe config -mode "${{ secrets.MODE }}" -user "${{ secrets.USERNAME }}" -pass "${{ secrets.PASSWORD }}" -totp "${{ secrets.TOTP_SECRET }}" -key "${{ env.MASTER_KEY_FILE }}" -r
+          ${{ env.INSTALL_DIR }}/eSignerCKATool.exe config -mode "product" -user "${{ secrets.ES_USERNAME }}" -pass "${{ secrets.ES_PASSWORD }}" -totp "${{ secrets.ES_TOTP_SECRET }}" -key "${{ env.MASTER_KEY_FILE }}" -r
 
       # 7) Unload and Load certificate to windows certificate store
       - name: Load Certificate into Windows Store
@@ -72,11 +72,28 @@ jobs:
           $CodeSigningCert = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert | WHERE { $_.subject -Match "Esigner" }
           echo "THUMBPRINT=$($CodeSigningCert.Thumbprint)" >> $env:GITHUB_ENV
 
-      # 9) Sign artifact with signtool
+      - name: Find signtool.exe
+        id: find-signtool
+        shell: pwsh
+        run: |
+          $path = Get-ChildItem -Path 'C:\Program Files (x86)\Windows Kits\10\bin\' -Recurse -Filter signtool.exe | Select-Object -First 1 -ExpandProperty FullName
+          echo "SIGNSDK=$path" >> $env:GITHUB_ENV
+
       - name: Sign Sample File with SignTool
         run: |
-          & 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe' sign /debug /fd sha256 /tr http://ts.ssl.com /td sha256 /sha1 ${{ env.THUMBPRINT }} ${{ env.SIGNABLE_APP_FILE_PATH }}
+          & "${{ env.SIGNSDK }}" sign /debug /fd sha256 /tr http://ts.ssl.com /td sha256 /sha1 ${{ env.THUMBPRINT }} ${{ env.SIGNABLE_APP_FILE_PATH }}
+    
+#      # 9) Sign artifact with signtool
+#      - name: Sign Sample File with SignTool
+#        run: |
+#          & 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.22621.0/x64/signtool.exe' sign /debug /fd sha256 /tr http://ts.ssl.com /td sha256 /sha1 ${{ env.THUMBPRINT }} ${{ env.SIGNABLE_APP_FILE_PATH }}
 
+      - name: Upload eSignerCKA Logs
+        uses: actions/upload-artifact@v5
+        with:
+          name: OSPSuite-Full.12.1.136
+          path: OSPSuite-Full.12.1.136.exe
+        
       # 10) Upload eSignerCKA Logs
       - name: Upload eSignerCKA Logs
         uses: actions/upload-artifact@v5
