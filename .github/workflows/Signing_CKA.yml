@@ -86,6 +86,10 @@ jobs:
           $CodeSigningCert = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert | WHERE { $_.subject -Match "Esigner" }
           echo "THUMBPRINT=$($CodeSigningCert.Thumbprint)" >> $env:GITHUB_ENV
     
+      - name: Debug Certificate List
+        run: |
+          Get-ChildItem Cert:\CurrentUser\My | Format-List Subject,Thumbprint,EnhancedKeyUsageList
+    
       # 9) Sign artifact with signtool
       - name: Sign Sample File with SignTool
         run: |
