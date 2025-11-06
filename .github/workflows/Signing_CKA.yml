@@ -34,24 +34,24 @@ jobs:
           Remove-Item eSigner_CKA_Setup.zip
           Move-Item -Destination "eSigner_CKA_Installer.exe" -Path "eSigner_CKA_*\*.exe"
 
-      # 3) Download and Unzip Dynamics 365 Setup
-      - name: Download and Unzip Dynamics 365 Setup
-        run: |
-          Invoke-WebRequest -OutFile Dynamics.365.BC.12841.US.DVD.zip "https://download.microsoft.com/download/3/e/7/3e71083e-6cd6-4598-a6bb-5c602b74aec3/Release/Dynamics.365.BC.12841.US.DVD.zip"
-          Expand-Archive -Force Dynamics.365.BC.12841.US.DVD.zip
+#      # 3) Download and Unzip Dynamics 365 Setup
+#      - name: Download and Unzip Dynamics 365 Setup
+#        run: |
+#          Invoke-WebRequest -OutFile Dynamics.365.BC.12841.US.DVD.zip "https://download.microsoft.com/download/3/e/7/3e71083e-6cd6-4598-a6bb-5c602b74aec3/Release/Dynamics.365.BC.12841.US.DVD.zip"
+#          Expand-Archive -Force Dynamics.365.BC.12841.US.DVD.zip
 
-      # 4) Install Dynamics 365
-      - name: Install Dynamics 365
-        run: |
-          Start-Process ".\Dynamics.365.BC.12841.US.DVD\setup.exe" -argumentlist "/config .\Dynamics.365.BC.12841.US.DVD\Install-NavComponentConfig.xml /quiet" -wait
+#      # 4) Install Dynamics 365
+#      - name: Install Dynamics 365
+#        run: |
+#          Start-Process ".\Dynamics.365.BC.12841.US.DVD\setup.exe" -argumentlist "/config .\Dynamics.365.BC.12841.US.DVD\Install-NavComponentConfig.xml /quiet" -wait
 
       # 5) Install eSignerCKA
       - name: Setup eSignerCKA in Silent Mode
         run: |
           New-Item -ItemType Directory -Force -Path ${{ env.INSTALL_DIR }}
           Start-Process ".\eSigner_CKA_Installer.exe" -argumentlist '/CURRENTUSER /VERYSILENT /SUPPRESSMSGBOXES /DIR="${{ env.INSTALL_DIR }}"' -wait
-          Start-Process ".\setup\vc_redist.x86.exe" -argumentlist "/install /q" -wait
-          Start-Process ".\setup\vc_redist.x64.exe" -argumentlist "/install /q" -wait
+          # Start-Process ".\setup\vc_redist.x86.exe" -argumentlist "/install /q" -wait
+          # Start-Process ".\setup\vc_redist.x64.exe" -argumentlist "/install /q" -wait
           ${{ env.INSTALL_DIR }}/RegisterKSP.exe | Out-Null
           ${{ env.INSTALL_DIR }}/eSignerCSP.Config.exe | Out-Null
 
