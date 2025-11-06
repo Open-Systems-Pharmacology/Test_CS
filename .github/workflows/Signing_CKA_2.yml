@@ -100,8 +100,8 @@ jobs:
         run: |
           $file = "$Env:SIGNABLE_APP_FILE_PATH"
           $sig = Get-AuthenticodeSignature $file
-          $args = @('sign','/debug','/fd','sha256','/tr','https://ts.ssl.com','/td','sha256','/sha1',"$Env:THUMBPRINT", "$file")
-          if ($sig.Status -eq 'Valid') { $args = @('sign','/as','/debug','/fd','sha256','/tr','https://ts.ssl.com','/td','sha256','/sha1',"$Env:THUMBPRINT", "$file") }
+          $args = @('sign','/debug','/fd','sha256','/tr','http://ts.ssl.com','/td','sha256','/sha1',"$Env:THUMBPRINT", "$file")
+          if ($sig.Status -eq 'Valid') { $args = @('sign','/as','/debug','/fd','sha256','/tr','http://ts.ssl.com','/td','sha256','/sha1',"$Env:THUMBPRINT", "$file") }
           & "$Env:SIGNSDK" @args
 
       - name: Post-sign verification (signature and container)
