@@ -106,7 +106,7 @@ jobs:
 
       - name: Validate setup
         run: |
-          $Env:SIGNABLE_APP_FILE_PATH /layout . /log layout.log
+          ${{ env.SIGNABLE_APP_FILE_PATH }} /layout . /log layout.log
 
       - name: Post-sign verification (signature and container)
         shell: pwsh
