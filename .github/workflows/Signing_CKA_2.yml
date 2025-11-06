@@ -86,9 +86,6 @@ jobs:
           "SIGNSDK=$path" | Out-File -FilePath $env:GITHUB_ENV -Append
           Write-Host "Using signtool: $path"
 
-      - name: Install WiX Toolset (for Insignia)
-        run: choco install wixtoolset --version=3.14.0.6526 -y
-
       - name: Pre-sign diagnostics
         shell: pwsh
         run: |
