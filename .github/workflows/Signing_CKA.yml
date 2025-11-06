@@ -34,16 +34,16 @@ jobs:
           Remove-Item eSigner_CKA_Setup.zip
           Move-Item -Destination "eSigner_CKA_Installer.exe" -Path "eSigner_CKA_*\*.exe"
 
-      # 3) Download and Unzip Dynamics 365 Setup
-      - name: Download and Unzip Dynamics 365 Setup
-        run: |
-          Invoke-WebRequest -OutFile Dynamics.365.BC.12841.US.DVD.zip "https://download.microsoft.com/download/3/e/7/3e71083e-6cd6-4598-a6bb-5c602b74aec3/Release/Dynamics.365.BC.12841.US.DVD.zip"
-          Expand-Archive -Force Dynamics.365.BC.12841.US.DVD.zip
+#      # 3) Download and Unzip Dynamics 365 Setup
+#      - name: Download and Unzip Dynamics 365 Setup
+#        run: |
+#          Invoke-WebRequest -OutFile Dynamics.365.BC.12841.US.DVD.zip "https://download.microsoft.com/download/3/e/7/3e71083e-6cd6-4598-a6bb-5c602b74aec3/Release/Dynamics.365.BC.12841.US.DVD.zip"
+#          Expand-Archive -Force Dynamics.365.BC.12841.US.DVD.zip
 
-      # 4) Install Dynamics 365
-      - name: Install Dynamics 365
-        run: |
-          Start-Process ".\Dynamics.365.BC.12841.US.DVD\setup.exe" -argumentlist "/config .\Dynamics.365.BC.12841.US.DVD\Install-NavComponentConfig.xml /quiet" -wait
+#      # 4) Install Dynamics 365
+#      - name: Install Dynamics 365
+#        run: |
+#          Start-Process ".\Dynamics.365.BC.12841.US.DVD\setup.exe" -argumentlist "/config .\Dynamics.365.BC.12841.US.DVD\Install-NavComponentConfig.xml /quiet" -wait
 
       # 5) Install eSignerCKA
       - name: Setup eSignerCKA in Silent Mode
@@ -61,8 +61,6 @@ jobs:
           ES_USERNAME: ${{ secrets.ES_USERNAME }}
           ES_PASSWORD: ${{ secrets.ES_PASSWORD }}
           ES_TOTP_SECRET: ${{ secrets.ES_TOTP_SECRET }}
-          INSTALL_DIR: ${{ env.INSTALL_DIR }}
-          MASTER_KEY_FILE: ${{ env.MASTER_KEY_FILE }}
         run: |
           $exe = Join-Path $Env:INSTALL_DIR 'eSignerCKATool.exe'
           $args = @(
@@ -76,11 +74,6 @@ jobs:
           )
           & $exe @args
 
-#      # 6) Set SSLcom account information
-#      - name: Config Account Information on eSignerCKA
-#        run: |
-#          ${{ env.INSTALL_DIR }}/eSignerCKATool.exe config -mode "product" -user "${{ secrets.ES_USERNAME }}" -pass "${{ secrets.ES_PASSWORD }}" -totp "${{ secrets.ES_TOTP_SECRET }}" -key "${{ env.MASTER_KEY_FILE }}" -r
-
       # 7) Unload and Load certificate to windows certificate store
       - name: Load Certificate into Windows Store
         run: |
@@ -92,17 +85,6 @@ jobs:
         run: |
           $CodeSigningCert = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert | WHERE { $_.subject -Match "Esigner" }
           echo "THUMBPRINT=$($CodeSigningCert.Thumbprint)" >> $env:GITHUB_ENV
-
-#      - name: Find signtool.exe
-#        id: find-signtool
-#        shell: pwsh
-#        run: |
-#          $path = Get-ChildItem -Path 'C:\Program Files (x86)\Windows Kits\10\bin\' -Recurse -Filter signtool.exe | Select-Object -First 1 -ExpandProperty FullName
-#          echo "SIGNSDK=$path" >> $env:GITHUB_ENV
-
-#      - name: Sign Sample File with SignTool
-#        run: |
-#          & "${{ env.SIGNSDK }}" sign /debug /fd sha256 /tr http://ts.ssl.com /td sha256 /sha1 ${{ env.THUMBPRINT }} ${{ env.SIGNABLE_APP_FILE_PATH }}
     
       # 9) Sign artifact with signtool
       - name: Sign Sample File with SignTool
