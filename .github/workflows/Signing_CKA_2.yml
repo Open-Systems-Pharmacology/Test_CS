@@ -18,7 +18,7 @@ jobs:
 
       - name: download setup
         run: |
-          Invoke-WebRequest -OutFile OSPSuite-Full.12.1.136.exe "https://github.com/Open-Systems-Pharmacology/Suite/releases/download/v12.1/OSPSuite-Full.12.1.136.exe"
+          Invoke-WebRequest -OutFile ${{ env.SIGNABLE_APP_FILE_PATH }} "https://github.com/Open-Systems-Pharmacology/Suite/releases/download/v12.1/OSPSuite-Full.12.1.136.exe"
 
       - name: Download and Unzip eSignerCKA Setup
         run: |
@@ -100,14 +100,24 @@ jobs:
         run: |
           $file = "$Env:SIGNABLE_APP_FILE_PATH"
           $sig = Get-AuthenticodeSignature $file
-          $args = @('sign','/debug','/fd','sha256','/tr','http://ts.ssl.com','/td','sha256','/sha1',"$Env:THUMBPRINT", "$file")
-          if ($sig.Status -eq 'Valid') { $args = @('sign','/as','/debug','/fd','sha256','/tr','http://ts.ssl.com','/td','sha256','/sha1',"$Env:THUMBPRINT", "$file") }
+          $args = @('sign','/debug','/fd','sha256','/sha1',"$Env:THUMBPRINT", "$file")
           & "$Env:SIGNSDK" @args
+          
+#      - name: Sign bundle (append if already signed)
+#        shell: pwsh
+#        env:
+#          THUMBPRINT: ${{ env.THUMBPRINT }}
+#        run: |
+#          $file = "$Env:SIGNABLE_APP_FILE_PATH"
+#          $sig = Get-AuthenticodeSignature $file
+#          $args = @('sign','/debug','/fd','sha256','/tr','http://ts.ssl.com','/td','sha256','/sha1',"$Env:THUMBPRINT", "$file")
+#          if ($sig.Status -eq 'Valid') { $args = @('sign','/as','/debug','/fd','sha256','/tr','http://ts.ssl.com','/td','sha256','/sha1',"$Env:THUMBPRINT", "$file") }
+#          & "$Env:SIGNSDK" @args
 
-      - name: Validate setup
-        shell: cmd
-        run: |
-          ${{ env.SIGNABLE_APP_FILE_PATH }} /layout . /log layout.log
+#      - name: Validate setup
+#        shell: cmd
+#        run: |
+#          ${{ env.SIGNABLE_APP_FILE_PATH }} /layout . /log layout.log
 
       - name: Post-sign verification (signature and container)
         shell: pwsh
@@ -123,8 +133,8 @@ jobs:
       - name: Upload signed setup
         uses: actions/upload-artifact@v5
         with:
-          name: OSPSuite-Full.12.1.136
-          path: OSPSuite-Full.12.1.136.exe
+          name: ${{ env.SIGNABLE_APP_FILE_PATH }}
+          path: ${{ env.SIGNABLE_APP_FILE_PATH }}
 
       - name: Upload eSignerCKA Logs
         if: ${{ always() }}
