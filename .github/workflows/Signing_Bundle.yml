@@ -1,0 +1,80 @@
+name: Signing Wix Bundle
+on: [push, workflow_dispatch]
+
+env:
+  WIX: "C:/Program Files (x86)/WiX Toolset v3.14"
+  SIGNABLE_APP_FILE_PATH: OSPSuite-Full.12.1.136.exe
+
+permissions:
+  contents: read
+  packages: read
+  
+jobs:
+  sign-app-file:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: download setup
+        run: |
+          Invoke-WebRequest -OutFile ${{ env.SIGNABLE_APP_FILE_PATH }} "https://github.com/Open-Systems-Pharmacology/Suite/releases/download/v12.1/OSPSuite-Full.12.1.136.exe"
+
+      - name: Pre-sign diagnostics
+        shell: pwsh
+        run: |
+          Get-FileHash "$Env:SIGNABLE_APP_FILE_PATH" -Algorithm SHA256
+          $sig = Get-AuthenticodeSignature "$Env:SIGNABLE_APP_FILE_PATH"
+          Write-Host "Pre-sign signature status: $($sig.Status)"
+
+      - name: Extract Wix Burn Engine
+        shell: cmd
+        run: |
+          mkdir extracted
+          %WIX%\bin\wix.exe burn detach %SIGNABLE_APP_FILE_PATH% -engine extracted\burnengine.exe
+
+      - name: Sign Wix burn engine with CodeSignTool
+        uses: Open-Systems-Pharmacology/Workflows/.github/actions/codesigner-SSL@main
+        env:
+          ES_USERNAME: ${{ secrets.ES_USERNAME }}
+          ES_PASSWORD: ${{ secrets.ES_PASSWORD }}
+          ES_CREDENTIAL_ID: ${{ secrets.ES_CREDENTIAL_ID }}
+          ES_TOTP_SECRET: ${{ secrets.ES_TOTP_SECRET }}
+        with:
+          file_path: ./extracted/burnengine.exe
+
+      - name: Reattach signed Wix Burn engine to Bundle
+        shell: cmd
+        run: |
+          rename %SIGNABLE_APP_FILE_PATH% original_%SIGNABLE_APP_FILE_PATH%
+          %WIX%\bin\wix.exe burn reattach original_%SIGNABLE_APP_FILE_PATH% -engine extracted\burnengine.exe -o %SIGNABLE_APP_FILE_PATH%
+          del original_%SIGNABLE_APP_FILE_PATH%
+
+      - name: Sign Suite Setup with CodeSignTool
+        uses: Open-Systems-Pharmacology/Workflows/.github/actions/codesigner-SSL@main
+        env:
+          ES_USERNAME: ${{ secrets.ES_USERNAME }}
+          ES_PASSWORD: ${{ secrets.ES_PASSWORD }}
+          ES_CREDENTIAL_ID: ${{ secrets.ES_CREDENTIAL_ID }}
+          ES_TOTP_SECRET: ${{ secrets.ES_TOTP_SECRET }}
+        with:
+          file_path: ./${{env.SIGNABLE_APP_FILE_PATH}}
+          #file_path: ./output/OSPSuite-Full.${{env.APP_VERSION}}.exe
+
+      - name: Post-sign verification (signature and container)
+        shell: pwsh
+        run: |
+          & "$Env:SIGNSDK" verify /pa /all /v "$Env:SIGNABLE_APP_FILE_PATH"
+          # Validate attached container is intact
+          $insignia = "${env:ProgramFiles(x86)}\WiX Toolset v3.14\bin\insignia.exe"
+          if (-not (Test-Path $insignia)) { $insignia = "${env:ProgramFiles(x86)}\WiX Toolset v3.14\bin\insignia.exe" }
+          & "$insignia" -ib "$Env:SIGNABLE_APP_FILE_PATH" -o payload.cab
+          if (-not (Test-Path 'payload.cab')) { throw "Attached container extraction failed after signing." }
+          Remove-Item payload.cab
+
+      - name: Upload signed setup
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ env.SIGNABLE_APP_FILE_PATH }}
+          path: ${{ env.SIGNABLE_APP_FILE_PATH }}
+
