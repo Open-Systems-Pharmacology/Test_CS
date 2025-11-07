@@ -30,9 +30,10 @@ jobs:
       - name: Extract Wix Burn Engine
         shell: cmd
         run: |
-          dir "%WIX%\bin\*.exe"
-          mkdir extracted
-          "%WIX%\bin\wix.exe" burn detach %SIGNABLE_APP_FILE_PATH% -engine extracted\burnengine.exe
+          insignia -ib %SIGNABLE_APP_FILE_PATH% -o burnengine.exe
+          # dir "%WIX%\bin\*.exe"
+          # mkdir extracted
+          #"%WIX%\bin\wix.exe" burn detach %SIGNABLE_APP_FILE_PATH% -engine extracted\burnengine.exe
 
       - name: Sign Wix burn engine with CodeSignTool
         uses: Open-Systems-Pharmacology/Workflows/.github/actions/codesigner-SSL@main
@@ -42,13 +43,14 @@ jobs:
           ES_CREDENTIAL_ID: ${{ secrets.ES_CREDENTIAL_ID }}
           ES_TOTP_SECRET: ${{ secrets.ES_TOTP_SECRET }}
         with:
-          file_path: ./extracted/burnengine.exe
+          file_path: ./burnengine.exe
 
       - name: Reattach signed Wix Burn engine to Bundle
         shell: cmd
         run: |
           rename %SIGNABLE_APP_FILE_PATH% original_%SIGNABLE_APP_FILE_PATH%
-          "%WIX%\bin\wix.exe" burn reattach original_%SIGNABLE_APP_FILE_PATH% -engine extracted\burnengine.exe -o %SIGNABLE_APP_FILE_PATH%
+          insignia -ab burnengine.exe original_%SIGNABLE_APP_FILE_PATH% -o %SIGNABLE_APP_FILE_PATH%
+          # "%WIX%\bin\wix.exe" burn reattach original_%SIGNABLE_APP_FILE_PATH% -engine extracted\burnengine.exe -o %SIGNABLE_APP_FILE_PATH%
           del original_%SIGNABLE_APP_FILE_PATH%
 
       - name: Sign Suite Setup with CodeSignTool
