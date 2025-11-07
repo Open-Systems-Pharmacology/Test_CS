@@ -31,7 +31,7 @@ jobs:
         shell: cmd
         run: |
           mkdir extracted
-          %WIX%\bin\wix.exe burn detach %SIGNABLE_APP_FILE_PATH% -engine extracted\burnengine.exe
+          "%WIX%\bin\wix.exe" burn detach %SIGNABLE_APP_FILE_PATH% -engine extracted\burnengine.exe
 
       - name: Sign Wix burn engine with CodeSignTool
         uses: Open-Systems-Pharmacology/Workflows/.github/actions/codesigner-SSL@main
@@ -47,7 +47,7 @@ jobs:
         shell: cmd
         run: |
           rename %SIGNABLE_APP_FILE_PATH% original_%SIGNABLE_APP_FILE_PATH%
-          %WIX%\bin\wix.exe burn reattach original_%SIGNABLE_APP_FILE_PATH% -engine extracted\burnengine.exe -o %SIGNABLE_APP_FILE_PATH%
+          "%WIX%\bin\wix.exe" burn reattach original_%SIGNABLE_APP_FILE_PATH% -engine extracted\burnengine.exe -o %SIGNABLE_APP_FILE_PATH%
           del original_%SIGNABLE_APP_FILE_PATH%
 
       - name: Sign Suite Setup with CodeSignTool
