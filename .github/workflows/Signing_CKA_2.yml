@@ -105,6 +105,7 @@ jobs:
           & "$Env:SIGNSDK" @args
 
       - name: Validate setup
+        shell: cmd
         run: |
           ${{ env.SIGNABLE_APP_FILE_PATH }} /layout . /log layout.log
 
