@@ -30,6 +30,7 @@ jobs:
       - name: Extract Wix Burn Engine
         shell: cmd
         run: |
+          dir ""%WIX%\bin\*.exe"
           mkdir extracted
           "%WIX%\bin\wix.exe" burn detach %SIGNABLE_APP_FILE_PATH% -engine extracted\burnengine.exe
 
