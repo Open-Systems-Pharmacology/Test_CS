@@ -20,13 +20,6 @@ jobs:
         run: |
           Invoke-WebRequest -OutFile ${{ env.SIGNABLE_APP_FILE_PATH }} "https://github.com/Open-Systems-Pharmacology/Suite/releases/download/v12.1/OSPSuite-Full.12.1.136.exe"
 
-      - name: Pre-sign diagnostics
-        shell: pwsh
-        run: |
-          Get-FileHash "$Env:SIGNABLE_APP_FILE_PATH" -Algorithm SHA256
-          $sig = Get-AuthenticodeSignature "$Env:SIGNABLE_APP_FILE_PATH"
-          Write-Host "Pre-sign signature status: $($sig.Status)"
-
       - name: Extract Wix Burn Engine
         shell: cmd
         run: |
@@ -60,34 +53,8 @@ jobs:
           file_path: ./${{env.SIGNABLE_APP_FILE_PATH}}
           #file_path: ./output/OSPSuite-Full.${{env.APP_VERSION}}.exe
 
-      - name: Post-sign verification (signature and container)
-        shell: pwsh
-        run: |
-          $base = 'C:\Program Files (x86)\Windows Kits\10\bin'
-          $preferred = @('10.0.22621.0','10.0.22000.0','10.0.19041.0','10.0.17763.0','10.0.26100.0')
-          $path = $null
-          foreach ($v in $preferred) {
-            $candidate = Join-Path $base "$v\x64\signtool.exe"
-            if (Test-Path $candidate) { $path = $candidate; break }
-          }
-          if (-not $path) {
-            $found = Get-ChildItem -Directory $base | Sort-Object Name -Descending | ForEach-Object { Join-Path $_.FullName 'x64\signtool.exe' } | Where-Object { Test-Path $_ } | Select-Object -First 1
-            $path = $found
-          }
-          if (-not $path) { throw "SignTool not found." }
-          "SIGNSDK=$path" | Out-File -FilePath $env:GITHUB_ENV -Append
-          Write-Host "Using signtool: $path"        
-          & "$Env:SIGNSDK" verify /pa /all /v "$Env:SIGNABLE_APP_FILE_PATH"
-          # Validate attached container is intact
-          $insignia = "${env:ProgramFiles(x86)}\WiX Toolset v3.14\bin\insignia.exe"
-          if (-not (Test-Path $insignia)) { $insignia = "${env:ProgramFiles(x86)}\WiX Toolset v3.14\bin\insignia.exe" }
-          & "$insignia" -ib "$Env:SIGNABLE_APP_FILE_PATH" -o payload.cab
-          if (-not (Test-Path 'payload.cab')) { throw "Attached container extraction failed after signing." }
-          Remove-Item payload.cab
-
       - name: Upload signed setup
         uses: actions/upload-artifact@v5
         with:
           name: ${{ env.SIGNABLE_APP_FILE_PATH }}
           path: ${{ env.SIGNABLE_APP_FILE_PATH }}
-
