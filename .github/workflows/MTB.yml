@@ -1,0 +1,36 @@
+name: Sign MTB
+on: [push, workflow_dispatch]
+
+env:
+  SIGNABLE_APP_FILE_PATH: MoBiToolboxForMatlab.8.0.10.msi
+
+permissions:
+  contents: read
+  packages: read
+  
+jobs:
+  sign-app-file:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: download setup
+        run: |
+          Invoke-WebRequest -OutFile ${{ env.SIGNABLE_APP_FILE_PATH }} "https://github.com/Open-Systems-Pharmacology/Matlab-Toolbox/releases/download/v8.0.10/MoBiToolboxForMatlab.8.0.10.msi"
+
+      - name: Sign 
+        uses: Open-Systems-Pharmacology/Workflows/.github/actions/codesigner-SSL@main
+        env:
+          ES_USERNAME: ${{ secrets.ES_USERNAME }}
+          ES_PASSWORD: ${{ secrets.ES_PASSWORD }}
+          ES_CREDENTIAL_ID: ${{ secrets.ES_CREDENTIAL_ID }}
+          ES_TOTP_SECRET: ${{ secrets.ES_TOTP_SECRET }}
+        with:
+          file_path: ./${{env.SIGNABLE_APP_FILE_PATH}}
+
+      - name: Upload signed setup
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ env.SIGNABLE_APP_FILE_PATH }}
+          path: ${{ env.SIGNABLE_APP_FILE_PATH }}
